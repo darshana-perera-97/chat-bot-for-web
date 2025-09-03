@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Research Publishing Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', 'Georgia', 'Serif', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            background: white;
+            padding: 40px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #1a365d;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #4a5568;
+            font-style: italic;
+        }
+
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #2c5aa0;
+            transition: transform 0.2s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .feature h3 {
+            color: #2c5aa0;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .feature p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .research-stats {
+            background: #f0f4f8;
+            border: 2px solid #2c5aa0;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .research-stats h3 {
+            color: #2c5aa0;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .research-stats p {
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c5aa0;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #4a5568;
+            margin-top: 5px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #2c5aa0;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #1a365d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44,90,160,0.4);
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .footer {
+            text-align: center;
+            color: #4a5568;
+            margin-top: 40px;
+            background: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            color: #2c5aa0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-item:hover {
+            color: #1a365d;
+        }
+
+        /* React ChatBot Iframe Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chatbot-toggle {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-toggle:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+        }
+
+        .chatbot-window {
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            display: none;
+        }
+
+        .chatbot-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: background-color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        @media (max-width: 480px) {
+            .chatbot-window {
+                width: 320px;
+                height: 500px;
+            }
+            
+            .chatbot-container {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Academic Research Publishing Platform</h1>
+            <p>Advancing Knowledge Through Open Access Research</p>
+        </div>
+
+        <div class="content">
+            <h2>Welcome to Our Research Publishing Platform</h2>
+            <p>We are a leading open-access academic publishing platform dedicated to advancing scientific knowledge across all disciplines. Our platform provides researchers, scholars, and academics with a comprehensive environment to publish, discover, and collaborate on cutting-edge research.</p>
+            
+            <div class="research-stats">
+                <h3>📊 Platform Statistics</h3>
+                <p>Join thousands of researchers who trust our platform for their academic publishing needs</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">15,000+</span>
+                        <span class="stat-label">Published Papers</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">8,500+</span>
+                        <span class="stat-label">Active Researchers</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">250+</span>
+                        <span class="stat-label">Research Journals</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">95%</span>
+                        <span class="stat-label">Peer Review Rate</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="toggleChatbot()">Get Research Assistance</button>
+                    <button class="btn btn-secondary" style="margin-left: 10px;">Submit Your Paper</button>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <h3>📚 Open Access Publishing</h3>
+                    <p>All published research is freely accessible to the global academic community, ensuring maximum impact and knowledge dissemination without barriers.</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🔍 Rigorous Peer Review</h3>
+                    <p>Our expert editorial board and peer review process ensures the highest quality standards for all published research across diverse academic disciplines.</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🤖 AI Research Assistant</h3>
+                    <p>Get instant help with your research questions, literature reviews, and academic writing through our intelligent chatbot assistant.</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>📈 Impact Metrics</h3>
+                    <p>Track your research impact with comprehensive analytics, citation metrics, and download statistics to measure your academic influence.</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🌐 Global Collaboration</h3>
+                    <p>Connect with researchers worldwide through our collaborative platform, fostering interdisciplinary research and international partnerships.</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>⚡ Fast Publication</h3>
+                    <p>Our streamlined submission and review process ensures rapid publication while maintaining the highest academic standards and quality.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="nav-menu">
+                <a href="#" class="nav-item">Browse Journals</a>
+                <a href="#" class="nav-item">Submit Paper</a>
+                <a href="#" class="nav-item">Editorial Board</a>
+                <a href="#" class="nav-item">Author Guidelines</a>
+                <a href="#" class="nav-item">Contact Us</a>
+            </div>
+            <p>&copy; 2024 Academic Research Publishing Platform. All rights reserved. | ISSN: 1234-5678 | DOI: 10.1000/example</p>
+        </div>
+    </div>
+
+    <!-- React ChatBot Iframe Widget -->
+    <div class="chatbot-container">
+        <button class="chatbot-toggle" onclick="toggleChatbot()">
+            🤖 Research Assistant
+        </button>
+        
+        <div class="chatbot-window" id="chatbotWindow" style="display: none;">
+            <button class="close-btn" onclick="toggleChatbot()">×</button>
+            <iframe 
+                src="http://localhost:3000" 
+                class="chatbot-iframe"
+                title="React ChatBot"
+                allow="microphone; camera"
+            ></iframe>
+        </div>
+    </div>
+
+    <script>
+        function toggleChatbot() {
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            const chatbotToggle = document.querySelector('.chatbot-toggle');
+            
+            if (chatbotWindow.style.display === 'none') {
+                chatbotWindow.style.display = 'block';
+                chatbotToggle.style.display = 'none';
+            } else {
+                chatbotWindow.style.display = 'none';
+                chatbotToggle.style.display = 'block';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('React ChatBot iframe integration ready!');
+            console.log('Make sure React dev server is running on http://localhost:3000');
+        });
+    </script>
+</body>
+</html>
