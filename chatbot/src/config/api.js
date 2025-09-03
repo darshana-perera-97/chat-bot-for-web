@@ -1,24 +1,25 @@
 // API Configuration
 const API_CONFIG = {
-  // Backend server URL - can be overridden by environment variables
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:3333',
-  
+  // Backend server URL - can be overridden by environment variables:3002/
+  BASE_URL: process.env.REACT_APP_API_URL || "http://69.197.187.24:3009",
+  // BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:3333',
+
   // API endpoints
   ENDPOINTS: {
-    CHAT: '/api/chat',
-    HEALTH: '/api/health',
-    SESSIONS: '/api/sessions',
-    CHAT_HISTORY: '/api/chat/history'
+    CHAT: "/api/chat",
+    HEALTH: "/api/health",
+    SESSIONS: "/api/sessions",
+    CHAT_HISTORY: "/api/chat/history",
   },
-  
+
   // Request timeout (in milliseconds)
   TIMEOUT: 10000,
-  
+
   // Default headers
   DEFAULT_HEADERS: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 };
 
 // Helper function to get full API URL

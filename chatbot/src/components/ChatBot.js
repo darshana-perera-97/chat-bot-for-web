@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatBot.css';
+import { getChatUrl, getChatHistoryUrl, getBaseUrl } from '../config/api';
 
 const ChatBot = () => {
   const [messages, setMessages] = useState([]);
@@ -20,7 +21,7 @@ const ChatBot = () => {
   // Load chat history from backend
   const loadChatHistory = async (sessionId) => {
     try {
-      const response = await fetch(`http://localhost:3333/api/chat/history/${sessionId}`);
+      const response = await fetch(getChatHistoryUrl(sessionId));
       if (response.ok) {
         const data = await response.json();
         if (data.messages && data.messages.length > 0) {
@@ -105,7 +106,7 @@ const ChatBot = () => {
 
     try {
       // Send message to backend with session ID
-      const response = await fetch('http://localhost:3333/api/chat', {
+      const response = await fetch(getChatUrl(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ const ChatBot = () => {
       // Fallback response if backend is not available
       const fallbackResponse = {
         id: messages.length + 2,
-        text: "❌ I'm sorry, I'm having trouble connecting to the server. Please make sure the backend server is running on port 3333.",
+        text: `❌ I'm sorry, I'm having trouble connecting to the server. Please make sure the backend server is running at ${getBaseUrl()}.`,
         sender: 'bot'
       };
 
