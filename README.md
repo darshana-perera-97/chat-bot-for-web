@@ -37,6 +37,25 @@ This project demonstrates how to create and integrate a chatbot in both React.js
 
 ## Usage
 
+### Backend Server Setup
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the backend server:
+   ```bash
+   npm run dev
+   ```
+
+The backend will run on `http://localhost:3333`
+
 ### Option 1: React.js Application
 
 1. Navigate to the chatbot directory:
@@ -58,28 +77,28 @@ This project demonstrates how to create and integrate a chatbot in both React.js
 
 ### Option 2: Standalone HTML Page
 
-1. Open the `html page/index.html` file directly in your browser
-2. Click the chat button in the bottom-right corner
-3. Start chatting with the AI assistant
+1. Make sure the backend server is running on port 3333
+2. Open the `html page/index.html` file directly in your browser
+3. Click the chat button in the bottom-right corner
+4. Start chatting with the AI assistant
 
 ## Customization
 
 ### Adding New Responses
 
-To add new bot responses, modify the `getBotResponse` function in either:
-- `chatbot/src/components/ChatBot.js` (React version)
-- `html page/index.html` (HTML version)
+To add new bot responses, modify the `getBotResponse` function in:
+- `backend/index.js` (Backend server)
 
 Example:
 ```javascript
-function getBotResponse(userMessage) {
+const getBotResponse = (userMessage) => {
     const message = userMessage.toLowerCase();
     
     if (message.includes('your_keyword')) {
         return "Your custom response here!";
     }
     // ... existing responses
-}
+};
 ```
 
 ### Styling
@@ -89,17 +108,25 @@ function getBotResponse(userMessage) {
 
 ## Technical Details
 
+### Backend Implementation
+- **Express.js**: Web framework for Node.js
+- **CORS**: Cross-origin resource sharing enabled
+- **RESTful API**: JSON-based communication
+- **Error Handling**: Graceful error handling with fallbacks
+- **Health Monitoring**: Health check endpoints
+
 ### React Implementation
 - Built with React 19.1.1
 - Uses functional components with hooks
 - Responsive design with CSS Grid and Flexbox
 - Smooth animations and transitions
+- **API Integration**: Communicates with backend server
 
 ### HTML Implementation
 - Vanilla JavaScript
 - CSS3 animations and transitions
 - Mobile-responsive design
-- No external dependencies
+- **API Integration**: Communicates with backend server
 
 ## Browser Support
 
