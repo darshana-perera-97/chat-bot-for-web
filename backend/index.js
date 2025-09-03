@@ -129,7 +129,7 @@ const getBotResponse = async (userMessage, sessionId) => {
     // Add recent conversation history
     recentMessages.forEach(msg => {
       messages.push({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
+        role: (msg.sender === 'user' || msg.sender === 'admin') ? 'user' : 'assistant',
         content: msg.text || msg.content
       });
     });
@@ -177,7 +177,7 @@ app.get('/', (req, res) => {
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, sessionId } = req.body;
+    const { message, sessionId, sender } = req.body;
     
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
@@ -207,15 +207,15 @@ app.post('/api/chat', async (req, res) => {
         console.log(`♻️  Existing session: ${sessionId}`);
       }
 
-      // Save user message to chat history
+      // Save user/admin message to chat history
       const userMessage = {
         id: Date.now(),
         text: message,
-        sender: 'user',
+        sender: sender || 'user', // Use 'admin' if sender is specified
         timestamp: new Date().toISOString()
       };
       saveMessage(sessionId, userMessage);
-      console.log(`💾 User message saved to chat history`);
+      console.log(`💾 ${sender || 'User'} message saved to chat history`);
     }
 
     // Generate bot response using OpenAI

@@ -302,6 +302,12 @@
   border-bottom-right-radius: 4px !important;
 }
 
+.admin-message .message-bubble {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+  border: 1px solid #ffc107;
+  border-bottom-right-radius: 4px !important;
+}
+
 .bot-message .message-bubble {
   background: white !important;
   border: 1px solid #e9ecef;

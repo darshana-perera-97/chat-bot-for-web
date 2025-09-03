@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, ListGroup, Badge, Spinner, Alert, InputGroup, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, ListGroup, Badge, Spinner, Alert, InputGroup, Form, Button } from 'react-bootstrap';
 import Layout from './Layout';
 import { getSessionsUrl, getChatHistoryUrl } from '../config/api';
 
@@ -11,6 +11,8 @@ const ChatsPage = ({ onPageChange }) => {
   const [chatLoading, setChatLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [adminMessage, setAdminMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
     fetchSessions();
@@ -89,6 +91,62 @@ const ChatsPage = ({ onPageChange }) => {
         : session.lastMessage;
     }
     return 'No messages yet';
+  };
+
+  const handleSendAdminMessage = async () => {
+    if (!adminMessage.trim() || !selectedSession || sendingMessage) {
+      return;
+    }
+
+    setSendingMessage(true);
+    
+    try {
+      // Send admin message to the backend
+      const response = await fetch('http://localhost:3333/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: adminMessage,
+          sessionId: selectedSession.chatId,
+          sender: 'admin' // Flag to indicate this is from admin
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      // Add admin message to the chat history immediately
+      const adminMessageObj = {
+        id: Date.now(),
+        text: adminMessage,
+        sender: 'admin',
+        timestamp: new Date().toISOString()
+      };
+
+      setChatHistory(prev => [...prev, adminMessageObj]);
+      setAdminMessage('');
+
+      // Refresh chat history to get the bot response
+      setTimeout(() => {
+        handleSessionSelect(selectedSession);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error sending admin message:', error);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendAdminMessage();
+    }
   };
 
   return (
@@ -254,13 +312,19 @@ const ChatsPage = ({ onPageChange }) => {
                       <div
                         key={index}
                         className={`message-container mb-3 ${
-                          message.sender === 'user' ? 'user-message' : 'bot-message'
+                          message.sender === 'user' 
+                            ? 'user-message' 
+                            : message.sender === 'admin'
+                            ? 'admin-message'
+                            : 'bot-message'
                         }`}
                       >
                         <div
                           className={`message-bubble p-3 rounded ${
                             message.sender === 'user'
                               ? 'bg-primary text-white ms-auto'
+                              : message.sender === 'admin'
+                              ? 'bg-warning text-dark ms-auto'
                               : 'bg-white text-dark me-auto'
                           }`}
                           style={{
@@ -273,7 +337,11 @@ const ChatsPage = ({ onPageChange }) => {
                           </div>
                           <div
                             className={`message-time small mt-2 ${
-                              message.sender === 'user' ? 'text-white-50' : 'text-muted'
+                              message.sender === 'user' 
+                                ? 'text-white-50' 
+                                : message.sender === 'admin'
+                                ? 'text-dark'
+                                : 'text-muted'
                             }`}
                           >
                             {message.timestamp ? formatDate(message.timestamp) : 'Unknown time'}
@@ -283,6 +351,49 @@ const ChatsPage = ({ onPageChange }) => {
                     ))}
                   </div>
                 )}
+
+                {/* Admin Message Input */}
+                {selectedSession && (
+                  <div className="border-top p-3 bg-light">
+                    <div className="d-flex align-items-center">
+                      <div className="flex-grow-1 me-2">
+                        {/* <Form.Control
+                          as="textarea"
+                          rows={2}
+                          placeholder="Type your message as admin..."
+                          value={adminMessage}
+                          onChange={(e) => setAdminMessage(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          disabled={sendingMessage}
+                          style={{ resize: 'none' }}
+                        /> */}
+                      </div>
+                      {/* <Button
+                        variant="primary"
+                        onClick={handleSendAdminMessage}
+                        disabled={!adminMessage.trim() || sendingMessage}
+                        className="d-flex align-items-center"
+                      >
+                        {sendingMessage ? (
+                          <>
+                            <Spinner animation="border" size="sm" className="me-1" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-paper-plane me-1"></i>
+                            Send
+                          </>
+                        )}
+                      </Button> */}
+                    </div>
+                    {/* <small className="text-muted mt-1 d-block">
+                      <i className="fas fa-info-circle me-1"></i>
+                      Send messages as admin to continue the conversation
+                    </small> */}
+                  </div>
+                )
+                }
               </Card.Body>
             </Card>
           </Col>
