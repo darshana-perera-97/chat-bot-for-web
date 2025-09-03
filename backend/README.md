@@ -29,8 +29,13 @@ The server will start on `http://localhost:3333`
 
 ### POST /api/chat
 - **Description**: Send a message to the chatbot
-- **Body**: `{ "message": "your message here" }`
-- **Response**: `{ "response": "bot response", "status": "success", "timestamp": "...", "userMessage": "..." }`
+- **Body**: `{ "message": "your message here", "sessionId": "session_id" }`
+- **Response**: `{ "response": "bot response", "status": "success", "timestamp": "...", "userMessage": "...", "sessionId": "..." }`
+- **Note**: Automatically stores new session IDs in `./data/chatIds.json`
+
+### GET /api/sessions
+- **Description**: Get all stored session IDs
+- **Response**: `{ "sessions": [...], "total": 5, "status": "success", "timestamp": "..." }`
 
 ### GET /api/health
 - **Description**: Health check endpoint
@@ -47,6 +52,8 @@ NODE_ENV=development
 ## Features
 
 - **Research-focused responses**: Specialized for academic research assistance
+- **Session Management**: Automatic storage of session IDs with timestamps
+- **Data Persistence**: Session IDs stored in `./data/chatIds.json`
 - **Error handling**: Graceful error handling with fallback responses
 - **CORS enabled**: Allows frontend communication
 - **JSON API**: RESTful API design

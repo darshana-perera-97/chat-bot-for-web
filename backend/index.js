@@ -1,13 +1,57 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3333;
 
+// Chat IDs file path
+const CHAT_IDS_PATH = path.join(__dirname, 'data', 'chatIds.json');
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Helper function to read chat IDs
+const readChatIds = () => {
+  try {
+    if (fs.existsSync(CHAT_IDS_PATH)) {
+      const data = fs.readFileSync(CHAT_IDS_PATH, 'utf8');
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error('Error reading chat IDs:', error);
+    return [];
+  }
+};
+
+// Helper function to write chat IDs
+const writeChatIds = (chatIds) => {
+  try {
+    fs.writeFileSync(CHAT_IDS_PATH, JSON.stringify(chatIds, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error writing chat IDs:', error);
+    return false;
+  }
+};
+
+// Helper function to add new session ID
+const addSessionId = (sessionId) => {
+  const chatIds = readChatIds();
+  const newEntry = {
+    chatId: sessionId,
+    timestamp: new Date().toISOString(),
+    createdAt: new Date().toLocaleString()
+  };
+  
+  chatIds.push(newEntry);
+  writeChatIds(chatIds);
+  return newEntry;
+};
 
 // Chatbot response logic
 const getBotResponse = (userMessage) => {
@@ -60,13 +104,28 @@ app.get('/', (req, res) => {
 // Chat endpoint
 app.post('/api/chat', (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, sessionId } = req.body;
     
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
         error: 'Message is required and must be a string',
         status: 'error'
       });
+    }
+
+    // Log session ID for debugging and store it
+    if (sessionId) {
+      console.log(`Chat message from session: ${sessionId}`);
+      
+      // Check if this is a new session (first message)
+      const chatIds = readChatIds();
+      const existingSession = chatIds.find(entry => entry.chatId === sessionId);
+      
+      if (!existingSession) {
+        // Add new session ID to the file
+        const newEntry = addSessionId(sessionId);
+        console.log(`New session created: ${sessionId} at ${newEntry.createdAt}`);
+      }
     }
 
     // Simulate processing time
@@ -77,12 +136,32 @@ app.post('/api/chat', (req, res) => {
         response: botResponse,
         status: 'success',
         timestamp: new Date().toISOString(),
-        userMessage: message
+        userMessage: message,
+        sessionId: sessionId || null
       });
     }, 1000); // 1 second delay to simulate processing
 
   } catch (error) {
     console.error('Error processing chat message:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      status: 'error'
+    });
+  }
+});
+
+// Get all session IDs endpoint
+app.get('/api/sessions', (req, res) => {
+  try {
+    const chatIds = readChatIds();
+    res.json({
+      sessions: chatIds,
+      total: chatIds.length,
+      status: 'success',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error retrieving session IDs:', error);
     res.status(500).json({
       error: 'Internal server error',
       status: 'error'
@@ -105,8 +184,10 @@ app.listen(PORT, () => {
   console.log(`📡 API endpoints:`);
   console.log(`   GET  / - Server status`);
   console.log(`   POST /api/chat - Send message to chatbot`);
+  console.log(`   GET  /api/sessions - Get all session IDs`);
   console.log(`   GET  /api/health - Health check`);
   console.log(`🌐 Server URL: http://localhost:${PORT}`);
+  console.log(`💾 Session IDs stored in: ${CHAT_IDS_PATH}`);
 });
 
 module.exports = app;
