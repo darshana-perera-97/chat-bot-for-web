@@ -1,70 +1,146 @@
-# Getting Started with Create React App
+# Chatbot Admin Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A professional React.js admin dashboard for managing and monitoring chatbot sessions, built with Bootstrap and React Bootstrap.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### 📊 **Dashboard Overview**
+- **Real-time Statistics**: Total sessions, active sessions, recent sessions
+- **Backend Status**: Live connection status to the chatbot backend
+- **Session Management**: View and manage all chatbot sessions
 
-### `npm start`
+### 📋 **Session Management**
+- **Session List**: Complete table of all chat sessions
+- **Status Indicators**: Active, Recent, and Inactive session badges
+- **Session Details**: Creation time, last activity, and session ID
+- **Chat History**: View complete conversation history for any session
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 🎨 **Modern UI/UX**
+- **Bootstrap 5**: Professional, responsive design
+- **Font Awesome Icons**: Beautiful iconography throughout
+- **Hover Effects**: Smooth animations and transitions
+- **Mobile Responsive**: Works perfectly on all devices
+- **Loading States**: Professional loading indicators
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🔧 **Technical Features**
+- **Real-time Data**: Fetches live data from backend API
+- **Error Handling**: Graceful error handling with user feedback
+- **Modal Views**: Clean modal interface for chat history
+- **Auto-refresh**: Manual refresh functionality
+- **Session Status**: Intelligent session status detection
 
-### `npm test`
+## Setup Instructions
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 1. Install Dependencies
+```bash
+cd admin
+npm install
+```
 
-### `npm run build`
+### 2. Start the Development Server
+```bash
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The admin dashboard will be available at `http://localhost:3001`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 3. Backend Requirements
+Make sure the chatbot backend server is running on `http://localhost:3333`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 4. Configuration (Optional)
+You can customize the backend URL by creating a `.env` file in the admin directory:
 
-### `npm run eject`
+```bash
+# Backend server URL
+REACT_APP_API_URL=http://localhost:3333
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## API Endpoints Used
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **GET /api/sessions** - Fetch all session IDs
+- **GET /api/chat/history/:sessionId** - Get chat history for a session
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Components
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### AdminDashboard
+Main dashboard component that includes:
+- Navigation bar with refresh functionality
+- Statistics cards showing key metrics
+- Sessions table with status indicators
+- Chat history modal for detailed conversation view
 
-## Learn More
+## Configuration
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### API Configuration
+The admin dashboard uses a centralized configuration system located in `src/config/api.js`:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **Centralized URLs**: All backend URLs managed in one place
+- **Environment Support**: Can be overridden with environment variables
+- **Helper Functions**: Easy-to-use functions for generating API URLs
+- **Type Safety**: Consistent URL generation across the application
 
-### Code Splitting
+### Configuration Files
+- `src/config/api.js` - Main API configuration
+- `src/config/README.md` - Detailed configuration documentation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Styling
 
-### Analyzing the Bundle Size
+- **Bootstrap 5**: Complete Bootstrap framework
+- **React Bootstrap**: Bootstrap components for React
+- **Font Awesome**: Professional icons
+- **Custom CSS**: Additional styling for animations and effects
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Features in Detail
 
-### Making a Progressive Web App
+### Session Status Detection
+- **Active**: Sessions created within the last hour
+- **Recent**: Sessions created within the last 24 hours
+- **Inactive**: Sessions older than 24 hours
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Chat History Modal
+- **Complete Conversation**: View all messages in chronological order
+- **Message Formatting**: User messages in blue, bot messages in light gray
+- **Timestamps**: Precise timing for each message
+- **Session Metadata**: Creation time, last update, total messages
 
-### Advanced Configuration
+### Error Handling
+- **Connection Errors**: Clear error messages when backend is unavailable
+- **Loading States**: Professional loading indicators
+- **Retry Functionality**: Easy retry buttons for failed operations
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Development
 
-### Deployment
+### Available Scripts
+- `npm start` - Start development server
+- `npm build` - Build for production
+- `npm test` - Run tests
+- `npm eject` - Eject from Create React App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Dependencies
+- **React**: ^19.1.1
+- **Bootstrap**: ^5.3.0
+- **React Bootstrap**: ^2.9.0
+- **Font Awesome**: 6.0.0 (CDN)
 
-### `npm run build` fails to minify
+## Browser Support
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Responsive Design
+
+The dashboard is fully responsive and works on:
+- Desktop computers
+- Tablets
+- Mobile phones
+- All screen sizes
+
+## Future Enhancements
+
+- Real-time updates with WebSocket
+- Session analytics and charts
+- Export functionality for chat data
+- User management features
+- Advanced filtering and search

@@ -9,6 +9,9 @@
 ./data
 /data
 
+# credentials
+.env
+
 # testing
 /coverage
 

@@ -2,10 +2,16 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const OpenAI = require('openai');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3333;
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // File paths
 const CHAT_IDS_PATH = path.join(__dirname, 'data', 'chatIds.json');
@@ -104,42 +110,58 @@ const saveMessage = (sessionId, message) => {
   writeChatHistory(chatHistory);
 };
 
-// Chatbot response logic
-const getBotResponse = (userMessage) => {
-  const message = userMessage.toLowerCase();
-  
-  if (message.includes('hello') || message.includes('hi')) {
-    return "Hello! I'm your AI Research Assistant. I can help you with literature reviews, research methodology, academic writing, data analysis, and more. What research topic are you working on?";
-  } else if (message.includes('help') || message.includes('research')) {
-    return "I can assist you with various research tasks including: literature reviews, research methodology, academic writing, citation formatting, data analysis, and finding relevant sources. What specific area would you like help with?";
-  } else if (message.includes('literature') || message.includes('review')) {
-    return "For literature reviews, I can help you identify key themes, organize sources, and structure your review. What's your research topic or field of study?";
-  } else if (message.includes('methodology') || message.includes('method')) {
-    return "I can help you choose appropriate research methods, design studies, and understand different methodological approaches. What type of research are you conducting?";
-  } else if (message.includes('writing') || message.includes('paper')) {
-    return "I can assist with academic writing including structure, clarity, and proper citation formatting. What section of your paper are you working on?";
-  } else if (message.includes('citation') || message.includes('reference')) {
-    return "I can help with various citation styles (APA, MLA, Chicago, etc.) and proper referencing. Which citation style do you need help with?";
-  } else if (message.includes('data') || message.includes('analysis')) {
-    return "I can help you understand different data analysis methods, statistical approaches, and interpretation of results. What type of data are you working with?";
-  } else if (message.includes('thank')) {
-    return "You're welcome! I'm here to support your research journey. Feel free to ask me anything else about your academic work.";
-  } else if (message.includes('bye') || message.includes('goodbye')) {
-    return "Goodbye! Best of luck with your research. Don't hesitate to return if you need any assistance with your academic work.";
-  } else if (message.includes('quantitative')) {
-    return "Quantitative research involves numerical data analysis. I can help you with statistical methods, survey design, experimental design, and data interpretation. What specific quantitative method are you interested in?";
-  } else if (message.includes('qualitative')) {
-    return "Qualitative research focuses on understanding experiences and meanings. I can assist with interview techniques, thematic analysis, grounded theory, and case study methods. What qualitative approach are you considering?";
-  } else if (message.includes('thesis') || message.includes('dissertation')) {
-    return "I can help you with thesis and dissertation writing including structure, methodology selection, literature review organization, and academic writing style. What stage of your thesis are you at?";
-  } else if (message.includes('journal') || message.includes('publication')) {
-    return "I can guide you through the publication process including journal selection, manuscript preparation, peer review response, and academic writing best practices. What type of publication are you working on?";
-  } else if (message.includes('ethics') || message.includes('ethical')) {
-    return "Research ethics are crucial for academic integrity. I can help you understand ethical considerations, IRB requirements, informed consent, and responsible research practices. What ethical aspect concerns you?";
-  } else if (message.includes('statistics') || message.includes('statistical')) {
-    return "I can assist with statistical analysis including descriptive statistics, inferential tests, regression analysis, and choosing appropriate statistical methods for your research design. What statistical analysis do you need help with?";
-  } else {
-    return "That's an interesting research question! Could you provide more details about your specific area of study or what you'd like to explore further? I'm here to help with any academic research needs.";
+// OpenAI-powered chatbot response logic
+const getBotResponse = async (userMessage, sessionId) => {
+  try {
+    // Get chat history for context
+    const chatHistory = readChatHistory();
+    const sessionHistory = chatHistory[sessionId]?.messages || [];
+    
+    // Build conversation context (last 10 messages for context)
+    const recentMessages = sessionHistory.slice(-10);
+    const messages = [
+      {
+        role: "system",
+        content: "You are an AI Sales Representative for a Solar System selling company. You are knowledgeable about solar panels, renewable energy solutions, installation processes, cost savings, government incentives, and environmental benefits. Your goal is to help potential customers understand the benefits of solar energy and guide them towards making an informed decision about solar system installation. Be friendly, professional, and focus on the customer's energy needs, cost savings, and environmental impact. Always provide helpful information about solar solutions while being consultative rather than pushy.Act as a sales person of solar system selling company called NegGenAi-Solar. Provide simple and short answers only. "
+      }
+    ];
+
+    // Add recent conversation history
+    recentMessages.forEach(msg => {
+      messages.push({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text || msg.content
+      });
+    });
+
+    // Add current user message
+    messages.push({
+      role: "user",
+      content: userMessage
+    });
+
+    console.log(`🤖 Calling OpenAI API with ${messages.length} messages`);
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: messages,
+      max_tokens: 500,
+      temperature: 0.7,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    });
+
+    const botResponse = completion.choices[0]?.message?.content || "I apologize, but I'm having trouble generating a response right now. Please try again.";
+    
+    console.log(`✅ OpenAI response received: ${botResponse.length} characters`);
+    return botResponse;
+
+  } catch (error) {
+    console.error('❌ OpenAI API Error:', error.message);
+    
+    // Return error message instead of fallback responses
+    throw new Error('Chatbot server is not working. OpenAI API is unavailable.');
   }
 };
 
@@ -153,7 +175,7 @@ app.get('/', (req, res) => {
 });
 
 // Chat endpoint
-app.post('/api/chat', (req, res) => {
+app.post('/api/chat', async (req, res) => {
   try {
     const { message, sessionId } = req.body;
     
@@ -196,9 +218,9 @@ app.post('/api/chat', (req, res) => {
       console.log(`💾 User message saved to chat history`);
     }
 
-    // Simulate processing time
-    setTimeout(() => {
-      const botResponse = getBotResponse(message);
+    // Generate bot response using OpenAI
+    try {
+      const botResponse = await getBotResponse(message, sessionId);
       
       // Save bot response to chat history
       if (sessionId) {
@@ -224,7 +246,24 @@ app.post('/api/chat', (req, res) => {
         userMessage: message,
         sessionId: sessionId || null
       });
-    }, 1000); // 1 second delay to simulate processing
+    } catch (error) {
+      console.error('Error generating bot response:', error);
+      
+      // Check if it's an OpenAI API error
+      if (error.message.includes('Chatbot server is not working')) {
+        res.status(503).json({
+          error: 'Chatbot server is not working. OpenAI API is unavailable.',
+          message: 'The AI chatbot service is currently unavailable. Please try again later or contact support.',
+          status: 'error',
+          serviceUnavailable: true
+        });
+      } else {
+        res.status(500).json({
+          error: 'Failed to generate bot response',
+          status: 'error'
+        });
+      }
+    }
 
   } catch (error) {
     console.error('Error processing chat message:', error);

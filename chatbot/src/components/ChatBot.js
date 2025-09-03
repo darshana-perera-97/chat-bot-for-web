@@ -68,7 +68,7 @@ const ChatBot = () => {
         if (!historyLoaded) {
           // If no history found, set default welcome message
           setMessages([
-            { id: 1, text: "Hello! I'm your AI Research Assistant. I can help you with literature reviews, research questions, academic writing, and more. How can I assist you today?", sender: 'bot' }
+            { id: 1, text: "Hello! I'm your Solar System Sales Representative. I can help you learn about solar energy solutions, cost savings, installation processes, and environmental benefits. What would you like to know about solar systems for your home or business?", sender: 'bot' }
           ]);
           console.log(`💬 Started with welcome message for session: ${currentSessionId}`);
         }
@@ -76,7 +76,7 @@ const ChatBot = () => {
         console.error('Error initializing session:', error);
         // Fallback to welcome message
         setMessages([
-          { id: 1, text: "Hello! I'm your AI Research Assistant. I can help you with literature reviews, research questions, academic writing, and more. How can I assist you today?", sender: 'bot' }
+          { id: 1, text: "Hello! I'm your Solar System Sales Representative. I can help you learn about solar energy solutions, cost savings, installation processes, and environmental benefits. What would you like to know about solar systems for your home or business?", sender: 'bot' }
         ]);
       } finally {
         setIsLoading(false);
@@ -116,11 +116,22 @@ const ChatBot = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get response from server');
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        // Handle service unavailable error
+        if (response.status === 503 && data.serviceUnavailable) {
+          const serviceUnavailableResponse = {
+            id: messages.length + 2,
+            text: "⚠️ Chatbot server is not working. The AI service is currently unavailable. Please try again later or contact support.",
+            sender: 'bot'
+          };
+          setMessages(prev => [...prev, serviceUnavailableResponse]);
+          return;
+        } else {
+          throw new Error(data.error || 'Failed to get response from server');
+        }
+      }
 
       const botResponse = {
         id: messages.length + 2,
@@ -135,7 +146,7 @@ const ChatBot = () => {
       // Fallback response if backend is not available
       const fallbackResponse = {
         id: messages.length + 2,
-        text: "I'm sorry, I'm having trouble connecting to the server. Please make sure the backend server is running on port 3333.",
+        text: "❌ I'm sorry, I'm having trouble connecting to the server. Please make sure the backend server is running on port 3333.",
         sender: 'bot'
       };
 
