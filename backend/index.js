@@ -7,12 +7,19 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3333;
 
-// Chat IDs file path
+// File paths
 const CHAT_IDS_PATH = path.join(__dirname, 'data', 'chatIds.json');
+const CHATS_PATH = path.join(__dirname, 'data', 'chats.json');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`\n🌐 ${req.method} ${req.path} - ${new Date().toLocaleTimeString()}`);
+  next();
+});
 
 // Helper function to read chat IDs
 const readChatIds = () => {
@@ -51,6 +58,50 @@ const addSessionId = (sessionId) => {
   chatIds.push(newEntry);
   writeChatIds(chatIds);
   return newEntry;
+};
+
+// Helper function to read chat history
+const readChatHistory = () => {
+  try {
+    if (fs.existsSync(CHATS_PATH)) {
+      const data = fs.readFileSync(CHATS_PATH, 'utf8');
+      return JSON.parse(data);
+    }
+    return {};
+  } catch (error) {
+    console.error('Error reading chat history:', error);
+    return {};
+  }
+};
+
+// Helper function to write chat history
+const writeChatHistory = (chatHistory) => {
+  try {
+    fs.writeFileSync(CHATS_PATH, JSON.stringify(chatHistory, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error writing chat history:', error);
+    return false;
+  }
+};
+
+// Helper function to save message to chat history
+const saveMessage = (sessionId, message) => {
+  const chatHistory = readChatHistory();
+  
+  if (!chatHistory[sessionId]) {
+    chatHistory[sessionId] = {
+      sessionId: sessionId,
+      createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      messages: []
+    };
+  }
+  
+  chatHistory[sessionId].messages.push(message);
+  chatHistory[sessionId].lastUpdated = new Date().toISOString();
+  
+  writeChatHistory(chatHistory);
 };
 
 // Chatbot response logic
@@ -113,10 +164,15 @@ app.post('/api/chat', (req, res) => {
       });
     }
 
+    // Log the incoming message with session ID
+    if (sessionId) {
+      console.log(`📨 Message: "${message}" | Session: ${sessionId}`);
+    } else {
+      console.log(`📨 Message: "${message}" | ⚠️  No session ID`);
+    }
+    
     // Log session ID for debugging and store it
     if (sessionId) {
-      console.log(`Chat message from session: ${sessionId}`);
-      
       // Check if this is a new session (first message)
       const chatIds = readChatIds();
       const existingSession = chatIds.find(entry => entry.chatId === sessionId);
@@ -124,13 +180,42 @@ app.post('/api/chat', (req, res) => {
       if (!existingSession) {
         // Add new session ID to the file
         const newEntry = addSessionId(sessionId);
-        console.log(`New session created: ${sessionId} at ${newEntry.createdAt}`);
+        console.log(`🆕 New session created: ${sessionId} at ${newEntry.createdAt}`);
+      } else {
+        console.log(`♻️  Existing session: ${sessionId}`);
       }
+
+      // Save user message to chat history
+      const userMessage = {
+        id: Date.now(),
+        text: message,
+        sender: 'user',
+        timestamp: new Date().toISOString()
+      };
+      saveMessage(sessionId, userMessage);
+      console.log(`💾 User message saved to chat history`);
     }
 
     // Simulate processing time
     setTimeout(() => {
       const botResponse = getBotResponse(message);
+      
+      // Save bot response to chat history
+      if (sessionId) {
+        const botMessage = {
+          id: Date.now() + 1,
+          text: botResponse,
+          sender: 'bot',
+          timestamp: new Date().toISOString()
+        };
+        saveMessage(sessionId, botMessage);
+        console.log(`💾 Bot response saved to chat history`);
+      }
+      
+      // Log the bot response
+      console.log(`🤖 Bot response: "${botResponse}"`);
+      console.log(`⏱️  Response time: ${new Date().toISOString()}`);
+      console.log(`────────────────────────────────────────`);
       
       res.json({
         response: botResponse,
@@ -169,6 +254,48 @@ app.get('/api/sessions', (req, res) => {
   }
 });
 
+// Get chat history by session ID endpoint
+app.get('/api/chat/history/:sessionId', (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    if (!sessionId) {
+      return res.status(400).json({
+        error: 'Session ID is required',
+        status: 'error'
+      });
+    }
+
+    const chatHistory = readChatHistory();
+    const sessionData = chatHistory[sessionId];
+
+    if (!sessionData) {
+      return res.json({
+        sessionId: sessionId,
+        messages: [],
+        status: 'success',
+        message: 'No chat history found for this session'
+      });
+    }
+
+    res.json({
+      sessionId: sessionId,
+      messages: sessionData.messages,
+      createdAt: sessionData.createdAt,
+      lastUpdated: sessionData.lastUpdated,
+      totalMessages: sessionData.messages.length,
+      status: 'success'
+    });
+
+  } catch (error) {
+    console.error('Error retrieving chat history:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      status: 'error'
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
@@ -185,9 +312,11 @@ app.listen(PORT, () => {
   console.log(`   GET  / - Server status`);
   console.log(`   POST /api/chat - Send message to chatbot`);
   console.log(`   GET  /api/sessions - Get all session IDs`);
+  console.log(`   GET  /api/chat/history/:sessionId - Get chat history`);
   console.log(`   GET  /api/health - Health check`);
   console.log(`🌐 Server URL: http://localhost:${PORT}`);
   console.log(`💾 Session IDs stored in: ${CHAT_IDS_PATH}`);
+  console.log(`💬 Chat history stored in: ${CHATS_PATH}`);
 });
 
 module.exports = app;

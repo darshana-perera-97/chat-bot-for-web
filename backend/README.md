@@ -37,6 +37,10 @@ The server will start on `http://localhost:3333`
 - **Description**: Get all stored session IDs
 - **Response**: `{ "sessions": [...], "total": 5, "status": "success", "timestamp": "..." }`
 
+### GET /api/chat/history/:sessionId
+- **Description**: Get chat history for a specific session
+- **Response**: `{ "sessionId": "...", "messages": [...], "createdAt": "...", "lastUpdated": "...", "totalMessages": 10, "status": "success" }`
+
 ### GET /api/health
 - **Description**: Health check endpoint
 - **Response**: Server health status and uptime
@@ -53,7 +57,10 @@ NODE_ENV=development
 
 - **Research-focused responses**: Specialized for academic research assistance
 - **Session Management**: Automatic storage of session IDs with timestamps
-- **Data Persistence**: Session IDs stored in `./data/chatIds.json`
+- **Chat History**: Complete conversation history stored by session ID
+- **Data Persistence**: 
+  - Session IDs stored in `./data/chatIds.json`
+  - Chat history stored in `./data/chats.json`
 - **Error handling**: Graceful error handling with fallback responses
 - **CORS enabled**: Allows frontend communication
 - **JSON API**: RESTful API design
