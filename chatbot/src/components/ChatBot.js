@@ -2,11 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import './ChatBot.css';
 
 const ChatBot = () => {
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your AI Research Assistant. I can help you with literature reviews, research questions, academic writing, and more. How can I assist you today?", sender: 'bot' }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [sessionId, setSessionId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -16,6 +15,24 @@ const ChatBot = () => {
   // Generate unique session ID
   const generateSessionId = () => {
     return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  };
+
+  // Load chat history from backend
+  const loadChatHistory = async (sessionId) => {
+    try {
+      const response = await fetch(`http://localhost:3333/api/chat/history/${sessionId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.messages && data.messages.length > 0) {
+          console.log(`📚 Loaded ${data.messages.length} previous messages for session: ${sessionId}`);
+          setMessages(data.messages);
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+    return false;
   };
 
   // Start new chat session
@@ -28,17 +45,42 @@ const ChatBot = () => {
     ]);
   };
 
-  // Initialize session on component mount
+    // Initialize session on component mount
   useEffect(() => {
-    const initializeSession = () => {
-      let currentSessionId = localStorage.getItem('chatbot_session_id');
-
-      if (!currentSessionId) {
-        currentSessionId = generateSessionId();
-        localStorage.setItem('chatbot_session_id', currentSessionId);
+    const initializeSession = async () => {
+      try {
+        setIsLoading(true);
+        let currentSessionId = localStorage.getItem('chatbot_session_id');
+        
+        if (!currentSessionId) {
+          currentSessionId = generateSessionId();
+          localStorage.setItem('chatbot_session_id', currentSessionId);
+          console.log(`🆕 Created new session: ${currentSessionId}`);
+        } else {
+          console.log(`♻️  Found existing session: ${currentSessionId}`);
+        }
+        
+        setSessionId(currentSessionId);
+        
+        // Try to load previous chat history
+        const historyLoaded = await loadChatHistory(currentSessionId);
+        
+        if (!historyLoaded) {
+          // If no history found, set default welcome message
+          setMessages([
+            { id: 1, text: "Hello! I'm your AI Research Assistant. I can help you with literature reviews, research questions, academic writing, and more. How can I assist you today?", sender: 'bot' }
+          ]);
+          console.log(`💬 Started with welcome message for session: ${currentSessionId}`);
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+        // Fallback to welcome message
+        setMessages([
+          { id: 1, text: "Hello! I'm your AI Research Assistant. I can help you with literature reviews, research questions, academic writing, and more. How can I assist you today?", sender: 'bot' }
+        ]);
+      } finally {
+        setIsLoading(false);
       }
-
-      setSessionId(currentSessionId);
     };
 
     initializeSession();
@@ -116,17 +158,24 @@ const ChatBot = () => {
           <h3>Research Assistant</h3>
         </div>
 
-        <div className="chatbot-messages">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`message ${message.sender}`}
-            >
-              <div className="message-content">
-                {message.text}
-              </div>
+                <div className="chatbot-messages">
+          {isLoading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <div className="loading-text">Loading chat history...</div>
             </div>
-          ))}
+          ) : (
+            messages.map((message) => (
+              <div 
+                key={message.id} 
+                className={`message ${message.sender}`}
+              >
+                <div className="message-content">
+                  {message.text}
+                </div>
+              </div>
+            ))
+          )}
           <div ref={messagesEndRef} />
         </div>
 
@@ -136,12 +185,14 @@ const ChatBot = () => {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
+            placeholder={isLoading ? "Loading..." : "Type your message..."}
             className="message-input"
+            disabled={isLoading}
           />
           <button
             onClick={handleSendMessage}
             className="send-btn"
+            disabled={isLoading}
           >
             Send
           </button>
